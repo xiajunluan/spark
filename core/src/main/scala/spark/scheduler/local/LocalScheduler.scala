@@ -7,7 +7,7 @@ import scala.collection.mutable.HashMap
 import spark._
 import spark.executor.ExecutorURLClassLoader
 import spark.scheduler._
-import spark.scheduler.cluster.{TaskLocality, TaskInfo}
+import spark.scheduler.cluster.{TaskLocality, TaskInfo, TaskSetManager}
 
 /**
  * A simple TaskScheduler implementation that runs tasks locally in a thread pool. Optionally
@@ -36,6 +36,11 @@ private[spark] class LocalScheduler(threads: Int, maxFailures: Int, sc: SparkCon
 
   override def setListener(listener: TaskSchedulerListener) {
     this.listener = listener
+  }
+
+  override def getTaskSchedulerInfo(): (HashMap[String, (Int, Int, Int, Int, Int)], HashMap[Int,(String, Int, Int, Int, Int, HashMap[Long,
+    TaskInfo])]) = {
+    return (null, null)
   }
 
   override def submitTasks(taskSet: TaskSet) {

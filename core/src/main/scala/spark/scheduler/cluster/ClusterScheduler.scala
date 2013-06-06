@@ -209,7 +209,35 @@ private[spark] class ClusterScheduler(val sc: SparkContext)
       taskSetTaskIds.remove(manager.taskSet.id)
     }
   }
-
+  
+  def getTaskSchedulerInfo(): (HashMap[String, (Int, Int, Int, Int, Int)], HashMap[Int,(String, Int, Int, Int, Int, HashMap[Long, TaskInfo])]) = {
+    this.synchronized {
+      SparkEnv.set(sc.env)
+      val poolInfo = new HashMap[String, (Int, Int, Int, Int, Int)]()
+      val stageInfo = new HashMap[Int, (String, Int, Int, Int, Int, HashMap[Long, TaskInfo])]()
+      for ((taskSetId, taskSetManager) <- activeTaskSets) {
+      val stageId = taskSetManager.stageId
+      val poolName = taskSetManager.parent.name
+      val numTasks = taskSetManager.numTasks
+      val runningTasks = taskSetManager.runningTasks
+      val tasksFinished = taskSetManager.tasksFinished
+      val pendingTasks = numTasks - runningTasks - tasksFinished
+      val taskInfos = Utils.clone(taskSetManager.taskInfos, SparkEnv.get.closureSerializer.newInstance())
+      stageInfo(stageId)= (poolName, runningTasks, tasksFinished, pendingTasks, numTasks, taskInfos)
+      logInfo("stageId :%d, poolname:%s, runningTasks:%d, tasksFinished:%d, pendingTasks:%d, numTasks:%d".format(stageId, poolName,
+        runningTasks, tasksFinished, pendingTasks, numTasks))
+      val (stageNum, poolRunningTasks, poolTasksFinished, poolPendingTasks, poolNumTasks) = poolInfo.getOrElseUpdate(poolName, (0, 0, 0, 0, 0))
+      poolInfo(poolName) = (stageNum+1, poolRunningTasks+runningTasks, poolTasksFinished+tasksFinished, poolPendingTasks+pendingTasks,
+        poolNumTasks+numTasks)
+      }
+      for ((poolName, (stageNum, poolRunningTasks, poolTasksFinished, poolPendingTasks, poolNumTasks)) <- poolInfo) {
+        logInfo("poolName:%s, stageNum:%d, poolRunningTasks:%d, poolTasksFinished:%d, poolPendingTasks:%d, poolNumTasks:%d".format(poolName,
+          stageNum, poolRunningTasks, poolTasksFinished, poolPendingTasks, poolNumTasks))
+      }
+      return (poolInfo, stageInfo)
+    }
+  }
+  
   /**
    * Called by cluster manager to offer resources on slaves. We respond by asking our active task
    * sets for tasks in order of priority. We fill each node with tasks in a round-robin manner so

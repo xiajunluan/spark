@@ -1,5 +1,7 @@
 package spark.scheduler
 
+import scala.collection.mutable.HashMap
+import spark.scheduler.cluster._
 /**
  * Low-level task scheduler interface, implemented by both ClusterScheduler and LocalScheduler.
  * These schedulers get sets of tasks submitted to them from the DAGScheduler for each stage,
@@ -25,4 +27,6 @@ private[spark] trait TaskScheduler {
 
   // Get the default level of parallelism to use in the cluster, as a hint for sizing jobs.
   def defaultParallelism(): Int
+
+  def getTaskSchedulerInfo(): (HashMap[String, (Int, Int, Int, Int, Int)], HashMap[Int,(String, Int, Int, Int, Int, HashMap[Long, TaskInfo])])
 }

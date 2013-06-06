@@ -43,7 +43,7 @@ import spark.deploy.{LocalSparkCluster, SparkHadoopUtil}
 import spark.partial.{ApproximateEvaluator, PartialResult}
 import spark.rdd.{CheckpointRDD, HadoopRDD, NewHadoopRDD, UnionRDD, ParallelCollectionRDD}
 import spark.scheduler.{DAGScheduler, ResultTask, ShuffleMapTask, SparkListener, SplitInfo, Stage, StageInfo, TaskScheduler}
-import spark.scheduler.cluster.{StandaloneSchedulerBackend, SparkDeploySchedulerBackend, ClusterScheduler}
+import spark.scheduler.cluster.{StandaloneSchedulerBackend, SparkDeploySchedulerBackend, ClusterScheduler, TaskInfo}
 import spark.scheduler.local.LocalScheduler
 import spark.scheduler.mesos.{CoarseMesosSchedulerBackend, MesosSchedulerBackend}
 import spark.storage.{BlockManagerUI, StorageStatus, StorageUtils, RDDInfo}
@@ -538,6 +538,12 @@ class SparkContext(
    */
   def getExecutorStorageStatus: Array[StorageStatus] = {
     env.blockManager.master.getStorageStatus
+  }
+  /* HashMap[String, (Int, Int, Int, Int, Int)] //[poolName, (stageNumber, runningTasks, finishedTasks, pendingTasks, allTasks)]
+   * HashMap[Int,(String, Int, Int, Int, Int, TaskInfo)] // [stageId, (poolName, runingTasks, finishedTasks, pendingTasks, allTasks, tasksInfo)]
+   */
+  def getTaskSchedulerInfo(): (HashMap[String, (Int, Int, Int, Int, Int)], HashMap[Int,(String, Int, Int, Int, Int, HashMap[Long, TaskInfo])]) = {
+    return taskScheduler.getTaskSchedulerInfo()
   }
 
   /**

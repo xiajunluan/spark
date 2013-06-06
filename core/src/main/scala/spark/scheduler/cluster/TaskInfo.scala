@@ -12,7 +12,8 @@ class TaskInfo(
     val launchTime: Long,
     val executorId: String,
     val hostPort: String,
-    val taskLocality: TaskLocality.TaskLocality) {
+    val taskLocality: TaskLocality.TaskLocality)
+    extends Serializable {
 
   Utils.checkHostPort(hostPort, "Expected hostport")
 
