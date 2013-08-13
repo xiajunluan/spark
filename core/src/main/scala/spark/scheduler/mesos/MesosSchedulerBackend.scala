@@ -286,6 +286,9 @@ private[spark] class MesosSchedulerBackend(
         }
       }
       scheduler.statusUpdate(tid, state, status.getData.asReadOnlyByteBuffer)
+      if (isFinished(status.getState)) {
+        d.reviveOffers()
+      }
     } finally {
       restoreClassLoader(oldClassLoader)
     }
