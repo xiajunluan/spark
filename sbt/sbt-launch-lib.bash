@@ -168,6 +168,7 @@ run() {
 
   # run sbt
   execRunner "$java_cmd" \
+    -Dhttp.proxyHost=proxy-shz.intel.com -Dhttp.proxyPort=911 -Dhttps.proxyHost=proxy-shz.intel.com -Dhttps.proxyPort=911 \
     ${SBT_OPTS:-$default_sbt_opts} \
     $(get_mem_opts $sbt_mem) \
     ${java_opts} \
